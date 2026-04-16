@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- =====================================================================
+         PORTAL: MY APPLICATION STATUS
+         URL: /my/application
+         ===================================================================== -->
+    <template id="portal_my_application" name="My Application Status" inherit_id="portal.portal_layout">
+        <xpath expr="//div[@id='wrap']" position="replace">
+            <div id="wrap">
+                <t t-set="head_portal">
+                    <style>
+                        /* ---- Page Layout ---- */
+                        .app-portal-wrap { background: #f8fafc; min-height: 100vh; padding: 36px 0 60px; }
+
+                        /* ---- Info Card ---- */
+                        .app-info-card {
+                            background: #fff;
+                            border-radius: 14px;
+                            box-shadow: 0 2px 16px rgba(0,0,0,.06);
+                            padding: 28px 32px;
+                            margin-bottom: 24px;
+                        }
+                        .app-info-card .card-title {
+                            font-size: 18px;
+                            font-weight: 700;
+                            color: #1e293b;
+                            margin-bottom: 18px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        }
+                        .info-row {
+                            display: flex;
+                            align-items: center;
+                            padding: 10px 0;
+                            border-bottom: 1px solid #f1f5f9;
+                            font-size: 14px;
+                        }
+                        .info-row:last-child { border-bottom: none; }
+                        .info-label { color: #6b7280; width: 140px; flex-shrink: 0; font-weight: 500; }
+                        .info-value { color: #1e293b; font-weight: 600; }
+
+                        /* ---- Status Badge ---- */
+                        .status-badge {
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 6px;
+                            padding: 5px 14px;
+                            border-radius: 20px;
+                            font-size: 13px;
+                            font-weight: 700;
+                            letter-spacing: .2px;
+                        }
+                        .badge-new        { background: #f1f5f9; color: #475569; border: 1.5px solid #cbd5e1; }
+                        .badge-interview  { background: #dbeafe; color: #1d4ed8; border: 1.5px solid #93c5fd; }
+                        .badge-hold       { background: #fef3c7; color: #92400e; border: 1.5px solid #fcd34d; }
+                        .badge-hired      { background: #d1fae5; color: #065f46; border: 1.5px solid #6ee7b7; }
+                        .badge-rejected   { background: #fee2e2; color: #991b1b; border: 1.5px solid #fca5a5; }
+
+                        /* ---- Kanban Progress ---- */
+                        .kanban-progress-wrap {
+                            background: #fff;
+                            border-radius: 14px;
+                            box-shadow: 0 2px 16px rgba(0,0,0,.06);
+                            padding: 28px 32px;
+                            margin-bottom: 24px;
+                        }
+                        .kanban-progress-wrap .section-title {
+                            font-size: 16px;
+                            font-weight: 700;
+                            color: #1e293b;
+                            margin-bottom: 22px;
+                        }
+                        .kanban-track {
+                            display: flex;
+                            align-items: flex-start;
+                            gap: 0;
+                            overflow-x: auto;
+                            padding-bottom: 8px;
+                        }
+                        .kanban-step {
+                            flex: 1;
+                            min-width: 90px;
+                            text-align: center;
+                            position: relative;
+                        }
+                        .kanban-step:not(:last-child)::after {
+                            content: '';
+                            position: absolute;
+                            top: 18px;
+                            left: 60%;
+                            width: 80%;
+                            height: 3px;
+                            background: #e2e8f0;
+                            z-index: 0;
+                        }
+                        .kanban-step.done:not(:last-child)::after  { background: #2c7be5; }
+                        .kanban-step.current:not(:last-child)::after { background: #93c5fd; }
+
+                        .step-circle {
+                            width: 36px;
+                            height: 36px;
+                            border-radius: 50%;
+                            margin: 0 auto 10px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 15px;
+                            position: relative;
+                            z-index: 1;
+                            border: 2.5px solid #e2e8f0;
+                            background: #f8fafc;
+                            color: #94a3b8;
+                            font-weight: 700;
+                            transition: all .3s;
+                        }
+                        .kanban-step.done    .step-circle { background: #2c7be5; border-color: #2c7be5; color: #fff; }
+                        .kanban-step.current .step-circle {
+                            background: #fff;
+                            border-color: #2c7be5;
+                            color: #2c7be5;
+                            box-shadow: 0 0 0 4px rgba(44,123,229,.15);
+                        }
+                        .kanban-step.hired   .step-circle { background: #10b981; border-color: #10b981; color: #fff; font-size:18px; }
+                        .kanban-step.rejected .step-circle { background: #ef4444; border-color: #ef4444; color: #fff; }
+
+                        .step-label {
+                            font-size: 11px;
+                            font-weight: 600;
+                            color: #94a3b8;
+                            line-height: 1.3;
+                        }
+                        .kanban-step.done    .step-label { color: #2c7be5; }
+                        .kanban-step.current .step-label { color: #1e293b; }
+                        .kanban-step.hired   .step-label { color: #059669; }
+                        .kanban-step.rejected .step-label { color: #dc2626; }
+
+                        /* ---- Current Stage Banner ---- */
+                        .stage-banner {
+                            border-radius: 10px;
+                            padding: 16px 20px;
+                            margin-top: 20px;
+                            font-size: 15px;
+                            font-weight: 600;
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                        }
+                        .stage-banner-new      { background:#f1f5f9; color:#475569; }
+                        .stage-banner-interview { background:#eff6ff; color:#1d4ed8; }
+                        .stage-banner-hold     { background:#fffbeb; color:#92400e; }
+                        .stage-banner-hired    { background:#ecfdf5; color:#065f46; }
+                        .stage-banner-rejected { background:#fef2f2; color:#991b1b; }
+
+                        /* ---- Timeline ---- */
+                        .timeline-wrap {
+                            background: #fff;
+                            border-radius: 14px;
+                            box-shadow: 0 2px 16px rgba(0,0,0,.06);
+                            padding: 28px 32px;
+                        }
+                        .timeline-item {
+                            display: flex;
+                            gap: 16px;
+                            padding-bottom: 20px;
+                            position: relative;
+                        }
+                        .timeline-item:not(:last-child)::before {
+                            content: '';
+                            position: absolute;
+                            left: 15px;
+                            top: 32px;
+                            bottom: 0;
+                            width: 2px;
+                            background: #e2e8f0;
+                        }
+                        .timeline-dot {
+                            width: 32px;
+                            height: 32px;
+                            border-radius: 50%;
+                            background: #eff6ff;
+                            border: 2px solid #93c5fd;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 14px;
+                            flex-shrink: 0;
+                        }
+                        .timeline-content p { margin: 0; font-size: 14px; color: #374151; }
+                        .timeline-content small { color: #9ca3af; font-size: 12px; }
+                    </style>
+                </t>
+
+                <div class="app-portal-wrap">
+                    <div class="container" style="max-width: 800px;">
+
+                        <!-- Page Header -->
+                        <div style="margin-bottom: 28px;">
+                            <h1 style="font-size: 1.7rem; font-weight: 700; color: #1e293b; margin: 0 0 6px;">
+                                📋 My Application
+                            </h1>
+                            <p style="color: #6b7280; margin: 0; font-size: 15px;">
+                                Track your application status in real-time.
+                            </p>
+                        </div>
+
+                        <!-- Application Info Card -->
+                        <div class="app-info-card">
+                            <div class="card-title">👤 Applicant Information</div>
+
+                            <div class="info-row">
+                                <span class="info-label">Full Name</span>
+                                <span class="info-value"><t t-esc="applicant.partner_name or '—'"/></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Email</span>
+                                <span class="info-value"><t t-esc="applicant.email_from or '—'"/></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Phone</span>
+                                <span class="info-value"><t t-esc="applicant.partner_phone or '—'"/></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Position</span>
+                                <span class="info-value"><t t-esc="applicant.job_id.name or '—'"/></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Department</span>
+                                <span class="info-value"><t t-esc="applicant.department_id.name or '—'"/></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Current Status</span>
+                                <span class="info-value">
+                                    <!-- Dynamic badge based on stage name -->
+                                    <t t-set="sname" t-value="(applicant.stage_id.name or '').lower()"/>
+                                    <t t-if="'hire' in sname">
+                                        <span class="status-badge badge-hired">✅ <t t-esc="applicant.stage_id.name"/></span>
+                                    </t>
+                                    <t t-elif="'hold' in sname">
+                                        <span class="status-badge badge-hold">⏸ <t t-esc="applicant.stage_id.name"/></span>
+                                    </t>
+                                    <t t-elif="'interview' in sname">
+                                        <span class="status-badge badge-interview">🎤 <t t-esc="applicant.stage_id.name"/></span>
+                                    </t>
+                                    <t t-elif="'reject' in sname">
+                                        <span class="status-badge badge-rejected">❌ <t t-esc="applicant.stage_id.name"/></span>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="status-badge badge-new">🆕 <t t-esc="applicant.stage_id.name or 'New'"/></span>
+                                    </t>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Kanban Progress Tracker -->
+                        <div class="kanban-progress-wrap">
+                            <div class="section-title">📊 Application Progress</div>
+
+                            <div class="kanban-track">
+                                <t t-foreach="stages" t-as="stage">
+                                    <t t-set="sn" t-value="stage['name'].lower()"/>
+                                    <t t-set="extra_class" t-value="''"/>
+                                    <t t-if="stage['is_current'] and 'hire' in sn">
+                                        <t t-set="extra_class" t-value="'hired'"/>
+                                    </t>
+                                    <t t-elif="stage['is_current'] and 'reject' in sn">
+                                        <t t-set="extra_class" t-value="'rejected'"/>
+                                    </t>
+                                    <t t-elif="stage['is_current']">
+                                        <t t-set="extra_class" t-value="'current'"/>
+                                    </t>
+                                    <t t-elif="stage['is_done']">
+                                        <t t-set="extra_class" t-value="'done'"/>
+                                    </t>
+
+                                    <div t-attf-class="kanban-step {{ extra_class }}">
+                                        <div class="step-circle">
+                                            <t t-if="stage['is_done']">✓</t>
+                                            <t t-elif="'hire' in sn and stage['is_current']">🎉</t>
+                                            <t t-elif="'reject' in sn and stage['is_current']">✕</t>
+                                            <t t-else=""><t t-esc="stage_index + 1"/></t>
+                                        </div>
+                                        <div class="step-label"><t t-esc="stage['name']"/></div>
+                                    </div>
+                                </t>
+                            </div>
+
+                            <!-- Current stage explanation banner -->
+                            <t t-set="cur_name" t-value="(applicant.stage_id.name or '').lower()"/>
+                            <t t-if="'hire' in cur_name">
+                                <div class="stage-banner stage-banner-hired">
+                                    🎉 Congratulations! You have been selected for this position. Our HR team will contact you soon with next steps.
+                                </div>
+                            </t>
+                            <t t-elif="'hold' in cur_name">
+                                <div class="stage-banner stage-banner-hold">
+                                    ⏸ Your application is currently on hold. We will review it again soon and update you accordingly.
+                                </div>
+                            </t>
+                            <t t-elif="'2nd' in cur_name or 'second' in cur_name">
+                                <div class="stage-banner stage-banner-interview">
+                                    🎤 You've been shortlisted for a 2nd Interview! Our team will contact you to schedule a time.
+                                </div>
+                            </t>
+                            <t t-elif="'1st' in cur_name or 'first' in cur_name or 'interview' in cur_name">
+                                <div class="stage-banner stage-banner-interview">
+                                    🎤 Great news! You've been selected for a 1st Interview. We will be in touch to schedule it.
+                                </div>
+                            </t>
+                            <t t-elif="'reject' in cur_name">
+                                <div class="stage-banner stage-banner-rejected">
+                                    ❌ Unfortunately, your application was not selected at this time. We appreciate your interest and wish you the best.
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <div class="stage-banner stage-banner-new">
+                                    🔄 Your application has been received and is under initial review. Please check back for updates.
+                                </div>
+                            </t>
+                        </div>
+
+                        <!-- Timeline -->
+                        <div class="timeline-wrap">
+                            <div style="font-size:16px; font-weight:700; color:#1e293b; margin-bottom:20px;">
+                                🕐 Activity Timeline
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot">📝</div>
+                                <div class="timeline-content">
+                                    <p><strong>Application Submitted</strong></p>
+                                    <p>You applied for <strong><t t-esc="applicant.job_id.name or 'the position'"/></strong></p>
+                                    <small><t t-esc="applicant.create_date" t-options='{"widget": "date"}'/></small>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot">📧</div>
+                                <div class="timeline-content">
+                                    <p><strong>Confirmation Email Sent</strong></p>
+                                    <p>Portal credentials delivered to <t t-esc="applicant.email_from"/></p>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot">📊</div>
+                                <div class="timeline-content">
+                                    <p><strong>Current Stage: <t t-esc="applicant.stage_id.name or 'New'"/></strong></p>
+                                    <p>Your application is being reviewed by our HR team</p>
+                                    <small>Last updated: <t t-esc="applicant.write_date" t-options='{"widget": "date"}'/></small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer note -->
+                        <p style="text-align:center; color:#9ca3af; font-size:13px; margin-top:24px; line-height:1.6;">
+                            This page updates automatically when HR moves your application.<br/>
+                            For questions, contact us at
+                            <a t-att-href="'mailto:' + (applicant.company_id.email or '')"
+                               style="color:#2c7be5;">
+                                <t t-esc="applicant.company_id.email or 'hr@company.com'"/>
+                            </a>
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- =====================================================================
+         NO APPLICATION FOUND
+         ===================================================================== -->
+    <template id="portal_no_application" name="No Application Found">
+        <t t-call="portal.portal_layout">
+            <div class="container" style="max-width: 500px; padding: 80px 20px; text-align: center;">
+                <div style="font-size: 64px; margin-bottom: 16px;">🔍</div>
+                <h2 style="color: #1e293b; margin-bottom: 12px;">No Application Found</h2>
+                <p style="color: #6b7280; margin-bottom: 28px; line-height: 1.7;">
+                    We couldn't find a job application linked to your account.
+                    If you recently applied, please make sure you're logged in with the correct email.
+                </p>
+                <a href="/jobs/apply"
+                   style="background:#2c7be5; color:#fff; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:700;">
+                    Apply Now →
+                </a>
+            </div>
+        </t>
+    </template>
+
+</odoo>

@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- =====================================================================
+         PUBLIC JOB APPLICATION FORM
+         URL: /jobs/apply
+         ===================================================================== -->
+    <template id="website_job_application_form" name="Job Application Form">
+        <t t-call="website.layout">
+            <t t-set="head">
+                <style>
+                    .job-apply-hero {
+                        background: linear-gradient(135deg, #1a56c4 0%, #2c7be5 50%, #0ea5e9 100%);
+                        padding: 60px 0 40px;
+                        color: #fff;
+                    }
+                    .job-apply-hero h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 8px; }
+                    .job-apply-hero p  { font-size: 1.05rem; opacity: 0.88; margin: 0; }
+
+                    .apply-card {
+                        background: #fff;
+                        border-radius: 16px;
+                        box-shadow: 0 4px 32px rgba(44,123,229,0.10);
+                        padding: 40px;
+                        margin-top: -30px;
+                        position: relative;
+                    }
+                    .apply-card .form-label {
+                        font-weight: 600;
+                        color: #374151;
+                        margin-bottom: 6px;
+                    }
+                    .apply-card .form-control, .apply-card .form-select {
+                        border: 1.5px solid #e2e8f0;
+                        border-radius: 8px;
+                        padding: 11px 14px;
+                        font-size: 15px;
+                        transition: border-color .2s, box-shadow .2s;
+                    }
+                    .apply-card .form-control:focus, .apply-card .form-select:focus {
+                        border-color: #2c7be5;
+                        box-shadow: 0 0 0 3px rgba(44,123,229,0.12);
+                        outline: none;
+                    }
+                    .btn-lucky {
+                        background: linear-gradient(135deg, #2c7be5, #1a56c4);
+                        color: #fff;
+                        border: none;
+                        border-radius: 10px;
+                        padding: 14px 32px;
+                        font-size: 17px;
+                        font-weight: 700;
+                        width: 100%;
+                        cursor: pointer;
+                        transition: transform .15s, box-shadow .15s;
+                        letter-spacing: .3px;
+                    }
+                    .btn-lucky:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 8px 24px rgba(44,123,229,0.30);
+                        color: #fff;
+                    }
+                    .btn-lucky:active { transform: translateY(0); }
+                    .btn-lucky .spinner {
+                        display: none;
+                        width: 18px;
+                        height: 18px;
+                        border: 2px solid rgba(255,255,255,.4);
+                        border-top-color: #fff;
+                        border-radius: 50%;
+                        animation: spin .7s linear infinite;
+                        margin-right: 8px;
+                    }
+                    @keyframes spin { to { transform: rotate(360deg); } }
+                    .error-alert {
+                        background: #fef2f2;
+                        border: 1px solid #fca5a5;
+                        border-radius: 8px;
+                        padding: 14px 18px;
+                        color: #b91c1c;
+                        margin-bottom: 20px;
+                        font-size: 14px;
+                    }
+                    .step-pills {
+                        display: flex;
+                        gap: 8px;
+                        margin-bottom: 28px;
+                        flex-wrap: wrap;
+                    }
+                    .step-pill {
+                        background: #eff6ff;
+                        color: #2c7be5;
+                        border-radius: 20px;
+                        padding: 5px 14px;
+                        font-size: 13px;
+                        font-weight: 600;
+                        border: 1.5px solid #bfdbfe;
+                    }
+                </style>
+            </t>
+
+            <!-- Hero -->
+            <div class="job-apply-hero">
+                <div class="container text-center">
+                    <h1>🚀 Apply for a Position</h1>
+                    <p>Fill in the form below — we'll create your personal tracking portal instantly!</p>
+                </div>
+            </div>
+
+            <div class="container" style="max-width: 640px; padding-bottom: 60px;">
+                <div class="apply-card">
+
+                    <!-- Steps indicator -->
+                    <div class="step-pills">
+                        <span class="step-pill">📝 Fill Form</span>
+                        <span class="step-pill">📧 Get Email</span>
+                        <span class="step-pill">🔑 Login to Portal</span>
+                        <span class="step-pill">📊 Track Status</span>
+                    </div>
+
+                    <!-- Error alert -->
+                    <t t-if="error == 'missing_fields'">
+                        <div class="error-alert">⚠️ Please fill in all required fields.</div>
+                    </t>
+                    <t t-elif="error == 'invalid_job'">
+                        <div class="error-alert">⚠️ Selected job position is not valid. Please try again.</div>
+                    </t>
+                    <t t-elif="error == 'submission_failed'">
+                        <div class="error-alert">⚠️ Submission failed. Please try again or contact us.</div>
+                    </t>
+
+                    <!-- Application Form -->
+                    <form action="/jobs/apply/submit" method="post" id="job-apply-form">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                        <!-- Full Name -->
+                        <div class="mb-3">
+                            <label class="form-label" for="partner_name">Full Name <span style="color:#e53e3e">*</span></label>
+                            <input type="text" class="form-control" id="partner_name"
+                                   name="partner_name" placeholder="e.g. Ali Hassan"
+                                   required="required"/>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label class="form-label" for="email_from">Email Address <span style="color:#e53e3e">*</span></label>
+                            <input type="email" class="form-control" id="email_from"
+                                   name="email_from" placeholder="ali@example.com"
+                                   required="required"/>
+                            <small style="color:#6b7280; font-size:12px;">
+                                Your portal credentials will be sent to this email.
+                            </small>
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="mb-3">
+                            <label class="form-label" for="partner_phone">Phone Number <span style="color:#e53e3e">*</span></label>
+                            <input type="tel" class="form-control" id="partner_phone"
+                                   name="partner_phone" placeholder="+92 300 1234567"
+                                   required="required"/>
+                        </div>
+
+                        <!-- Job Position -->
+                        <div class="mb-4">
+                            <label class="form-label" for="job_id">Position Applying For <span style="color:#e53e3e">*</span></label>
+                            <select class="form-select" id="job_id" name="job_id" required="required">
+                                <option value="">— Select a Position —</option>
+                                <t t-foreach="jobs" t-as="job">
+                                    <option t-att-value="job.id"
+                                            t-att-selected="selected_job and selected_job.id == job.id">
+                                        <t t-esc="job.name"/>
+                                        <t t-if="job.department_id">
+                                            — <t t-esc="job.department_id.name"/>
+                                        </t>
+                                    </option>
+                                </t>
+                            </select>
+                        </div>
+
+                        <!-- Cover Letter (optional) -->
+                        <div class="mb-4">
+                            <label class="form-label" for="cover_letter">
+                                Cover Letter / Message
+                                <span style="color:#9ca3af; font-weight:400;">(optional)</span>
+                            </label>
+                            <textarea class="form-control" id="cover_letter" name="cover_letter"
+                                      rows="4" placeholder="Tell us about yourself and why you're a great fit..."></textarea>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn-lucky" id="submit-btn">
+                            <span class="spinner" id="btn-spinner"></span>
+                            🍀 I'm Feeling Lucky — Submit Application!
+                        </button>
+
+                        <p style="text-align:center; color:#9ca3af; font-size:13px; margin-top:14px;">
+                            By submitting, you'll instantly receive portal access to track your application.
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- =====================================================================
+         THANK YOU PAGE
+         URL: /jobs/apply/thank-you
+         ===================================================================== -->
+    <template id="website_job_application_thankyou" name="Application Thank You">
+        <t t-call="website.layout">
+            <div class="container" style="max-width: 560px; padding: 80px 20px; text-align: center;">
+                <div style="font-size: 72px; margin-bottom: 16px;">🎉</div>
+                <h1 style="font-size: 2rem; font-weight: 700; color: #1e293b; margin-bottom: 12px;">
+                    Application Submitted!
+                </h1>
+                <p style="font-size: 1.05rem; color: #4b5563; margin-bottom: 28px; line-height: 1.7;">
+                    Thank you for applying! We've sent your portal login credentials to your email.
+                    Please check your inbox (and spam folder) to access your personal tracking portal.
+                </p>
+                <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; padding: 20px; margin-bottom: 28px; text-align: left;">
+                    <p style="margin:0; color:#166534; font-size:14px; line-height:1.8;">
+                        ✅ Application recorded successfully<br/>
+                        📧 Credentials email sent to your inbox<br/>
+                        🔑 Login using the credentials provided<br/>
+                        📊 Track your status in real-time on the portal
+                    </p>
+                </div>
+                <a href="/web/login" style="background:#2c7be5; color:#fff; padding:13px 32px; border-radius:8px; text-decoration:none; font-weight:700; font-size:15px; display:inline-block;">
+                    🔐 Go to Portal Login
+                </a>
+                <br/>
+                <a href="/jobs/apply" style="color:#6b7280; font-size:14px; margin-top:16px; display:inline-block;">
+                    ← Submit another application
+                </a>
+            </div>
+        </t>
+    </template>
+
+</odoo>

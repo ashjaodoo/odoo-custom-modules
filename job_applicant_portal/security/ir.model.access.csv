@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_applicant_portal_user,hr.applicant portal user,hr_recruitment.model_hr_applicant,base.group_portal,1,0,0,0
+access_hr_job_portal_user,hr.job portal user,hr_recruitment.model_hr_job,base.group_portal,1,0,0,0
+access_hr_recruitment_stage_portal,hr.recruitment.stage portal,hr_recruitment.model_hr_recruitment_stage,base.group_portal,1,0,0,0
